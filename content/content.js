@@ -170,14 +170,14 @@ async function fetchTranscript(baseUrl) {
     });
 
     if (response && response.success) {
-      console.log('[YouTube Summarizer] Successfully received transcript XML from background script');
+      console.log('[YouTube Summarizer] Successfully received transcript XML from Main World fetch');
       return parseTranscriptXml(response.xml);
     } else {
-      console.error('[YouTube Summarizer] Background transcript fetch failed:', response?.error);
-      throw new Error(response?.error || 'Failed to fetch transcript via background');
+      console.error('[YouTube Summarizer] Main World transcript fetch failed:', response?.error);
+      throw new Error(response?.error || 'Failed to fetch transcript via Main World');
     }
   } catch (error) {
-    console.error('[YouTube Summarizer] Error during background transcript fetch:', error);
+    console.error('[YouTube Summarizer] Error during Main World transcript fetch:', error);
     
     // Last resort: Try local fetch if background fails (might hit 429 again)
     console.log('[YouTube Summarizer] Attempting local fetch as last resort...');

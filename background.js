@@ -43,18 +43,21 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.action === 'FETCH_TRANSCRIPT') {
-    fetch(request.url)
-      .then(response => {
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      world: 'MAIN',
+      func: async (url) => {
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`Status: ${response.status}`);
-        return response.text();
-      })
-      .then(xml => {
-        sendResponse({ success: true, xml });
-      })
-      .catch(error => {
-        console.error('Background transcript fetch error:', error);
-        sendResponse({ success: false, error: error.message });
-      });
+        return await response.text();
+      },
+      args: [request.url]
+    }).then(results => {
+      sendResponse({ success: true, xml: results[0]?.result });
+    }).catch(error => {
+      console.error('Main World transcript fetch error:', error);
+      sendResponse({ success: false, error: error.message });
+    });
     return true;
   }
 });
