@@ -21,22 +21,35 @@ function getVideoId() {
 async function getTranscript() {
   const videoId = getVideoId();
   if (!videoId) {
+    console.error('[YouTube Summarizer] No video ID found in URL');
     throw new Error(window.I18n.t('noVideoId') || 'No video ID found in URL');
   }
 
+  console.log(`[YouTube Summarizer] Starting transcript extraction for video: ${videoId}`);
   const captionTracks = await getCaptionTracks(videoId);
   
   if (!captionTracks || captionTracks.length === 0) {
+    console.error('[YouTube Summarizer] No caption tracks found');
     throw new Error(window.I18n.t('noCaptions') || 'No captions available for this video');
   }
 
+  console.log(`[YouTube Summarizer] Found ${captionTracks.length} caption tracks`);
   const preferredTrack = findPreferredTrack(captionTracks);
   
   if (!preferredTrack) {
+    console.error('[YouTube Summarizer] No suitable caption track found among available tracks');
     throw new Error(window.I18n.t('noSuitableCaptions') || 'No suitable caption track found');
   }
 
+  console.log(`[YouTube Summarizer] Selected track: ${preferredTrack.languageCode} (${preferredTrack.kind || 'manual'})`);
   const transcriptText = await fetchTranscript(preferredTrack.baseUrl);
+  
+  if (!transcriptText) {
+    console.error('[YouTube Summarizer] Transcript text is empty after fetching');
+  } else {
+    console.log(`[YouTube Summarizer] Successfully fetched transcript, length: ${transcriptText.length} characters`);
+  }
+  
   return transcriptText;
 }
 
@@ -48,22 +61,29 @@ async function getCaptionTracks(videoId) {
 
   // 1. Try to get data from Main World via Background Script (Recommended fix for 429)
   try {
+    console.log('[YouTube Summarizer] Attempting to extract playerResponse from Main World...');
     const response = await chrome.runtime.sendMessage({ action: 'EXTRACT_YOUTUBE_DATA' });
     if (response && response.success && response.data) {
       playerResponse = response.data;
-      console.log('Successfully extracted playerResponse from Main World');
+      console.log('[YouTube Summarizer] Successfully extracted playerResponse from Main World');
+    } else {
+      console.warn('[YouTube Summarizer] Main World extraction returned no data or failed:', response?.error);
     }
   } catch (error) {
-    console.error('Failed to extract data from Main World:', error);
+    console.error('[YouTube Summarizer] Error during Main World extraction:', error);
   }
 
   // 2. Fallback: Search scripts in current world
   if (!playerResponse) {
+    console.log('[YouTube Summarizer] Falling back to searching scripts in Isolated World...');
     const scripts = document.querySelectorAll('script');
     for (const script of scripts) {
       if (script.textContent.includes('var ytInitialPlayerResponse =')) {
         playerResponse = extractJsonFromScript(script.textContent);
-        if (playerResponse) break;
+        if (playerResponse) {
+          console.log('[YouTube Summarizer] Found playerResponse in page scripts');
+          break;
+        }
       }
     }
   }
@@ -72,6 +92,7 @@ async function getCaptionTracks(videoId) {
     return playerResponse.captions.playerCaptionsTracklistRenderer.captionTracks;
   }
   
+  console.warn('[YouTube Summarizer] playerResponse does not contain captionTracks');
   return [];
 }
 
