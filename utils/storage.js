@@ -5,18 +5,33 @@
 
 const DEFAULT_SETTINGS = {
   language: 'en',
-  provider: 'openai',
-  openai: {
-    apiKey: '',
-    baseUrl: 'https://api.openai.com/v1',
-    model: 'gpt-4o-mini'
-  },
-  gemini: {
-    apiKey: '',
-    baseUrl: 'https://generativelanguage.googleapis.com',
-    model: 'gemini-2.0-flash'
-  },
-  systemPrompt: ''
+  connections: [
+    {
+      id: 'default_openai',
+      name: 'Default OpenAI',
+      provider: 'openai',
+      apiKey: '',
+      baseUrl: 'https://api.openai.com/v1',
+      model: 'gpt-4o-mini'
+    },
+    {
+      id: 'default_gemini',
+      name: 'Default Gemini',
+      provider: 'gemini',
+      apiKey: '',
+      baseUrl: 'https://generativelanguage.googleapis.com',
+      model: 'gemini-2.0-flash'
+    }
+  ],
+  activeConnectionId: 'default_openai',
+  prompts: [
+    {
+      id: 'default',
+      name: 'Default',
+      content: ''
+    }
+  ],
+  activePromptId: 'default'
 };
 
 /**
@@ -25,7 +40,47 @@ const DEFAULT_SETTINGS = {
  */
 async function getSettings() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(DEFAULT_SETTINGS, (result) => {
+    chrome.storage.sync.get({ ...DEFAULT_SETTINGS, systemPrompt: undefined, openai: undefined, gemini: undefined, provider: undefined }, (result) => {
+      // Migration: if old systemPrompt exists and new prompts are default/empty
+      if (result.systemPrompt && 
+          result.prompts.length === 1 && 
+          result.prompts[0].id === 'default' && 
+          !result.prompts[0].content) {
+        result.prompts[0].content = result.systemPrompt;
+      }
+
+      // Migration: if old provider settings exist, migrate them to connections
+      if (result.openai || result.gemini) {
+        if (!result.connections || result.connections.length <= 2) {
+          const connections = [];
+          if (result.openai) {
+            connections.push({
+              id: 'migrated_openai',
+              name: 'My OpenAI',
+              provider: 'openai',
+              apiKey: result.openai.apiKey || '',
+              baseUrl: result.openai.baseUrl || 'https://api.openai.com/v1',
+              model: result.openai.model || 'gpt-4o-mini'
+            });
+          }
+          if (result.gemini) {
+            connections.push({
+              id: 'migrated_gemini',
+              name: 'My Gemini',
+              provider: 'gemini',
+              apiKey: result.gemini.apiKey || '',
+              baseUrl: result.gemini.baseUrl || 'https://generativelanguage.googleapis.com',
+              model: result.gemini.model || 'gemini-2.0-flash'
+            });
+          }
+          
+          if (connections.length > 0) {
+            result.connections = connections;
+            result.activeConnectionId = result.provider === 'gemini' ? 'migrated_gemini' : 'migrated_openai';
+          }
+        }
+      }
+
       resolve(result);
     });
   });
@@ -69,13 +124,14 @@ async function getLanguage() {
  */
 async function getProviderConfig() {
   const settings = await getSettings();
-  const provider = settings.provider || 'openai';
-  const config = settings[provider] || DEFAULT_SETTINGS[provider];
+  const activeId = settings.activeConnectionId || DEFAULT_SETTINGS.activeConnectionId;
+  const connection = settings.connections.find(c => c.id === activeId) || settings.connections[0];
+  
   return {
-    provider,
-    apiKey: config.apiKey || '',
-    baseUrl: config.baseUrl || DEFAULT_SETTINGS[provider].baseUrl,
-    model: config.model || DEFAULT_SETTINGS[provider].model
+    provider: connection.provider,
+    apiKey: connection.apiKey || '',
+    baseUrl: connection.baseUrl || (connection.provider === 'openai' ? 'https://api.openai.com/v1' : 'https://generativelanguage.googleapis.com'),
+    model: connection.model || (connection.provider === 'openai' ? 'gpt-4o-mini' : 'gemini-2.0-flash')
   };
 }
 

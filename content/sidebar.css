@@ -21,6 +21,19 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+  gap: 10px;
+}
+
+.my-ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0; /* Allow shrinking if needed */
+}
+
+.my-ai-header-left h3 {
+  white-space: nowrap;
 }
 
 #my-ai-settings-btn {
@@ -43,6 +56,32 @@
   font-size: 12px;
   color: #aaa;
   margin-bottom: 10px;
+}
+
+.my-ai-prompt-container {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  max-width: 250px;
+}
+
+#my-ai-prompt-select, #my-ai-connection-select {
+  flex: 1;
+  background-color: #2a2a2a;
+  color: #eee;
+  border: 1px solid #3f3f3f;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+  height: 28px;
+  min-width: 0;
+}
+
+#my-ai-prompt-select:focus, #my-ai-connection-select:focus {
+  border-color: #3ea6ff;
 }
 
 .my-ai-manual-input-container {

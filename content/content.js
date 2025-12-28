@@ -187,7 +187,13 @@ async function createSidebarUI() {
   container.id = 'my-ai-summary-box';
   container.innerHTML = `
     <div class="my-ai-header">
-      <h3>✨ ${window.I18n.t('title') || 'AI Summary'}</h3>
+      <div class="my-ai-header-left">
+        <h3>✨ ${window.I18n.t('title') || 'AI Summary'}</h3>
+        <div class="my-ai-prompt-container">
+          <select id="my-ai-connection-select"></select>
+          <select id="my-ai-prompt-select"></select>
+        </div>
+      </div>
       <button id="my-ai-settings-btn" title="${window.I18n.t('settings') || 'Settings'}">⚙️</button>
     </div>
     <div id="ai-status">${window.I18n.t('readyStatus') || 'Ready to summarize this video.'}</div>
@@ -214,6 +220,40 @@ async function createSidebarUI() {
 
   if (target) {
     target.insertBefore(container, target.firstChild);
+    
+    // Load prompts and connections
+    const settings = await window.StorageService.getSettings();
+    
+    const connectionSelect = document.getElementById('my-ai-connection-select');
+    if (connectionSelect) {
+      settings.connections.forEach(conn => {
+        const option = document.createElement('option');
+        option.value = conn.id;
+        option.textContent = conn.name;
+        option.selected = conn.id === settings.activeConnectionId;
+        connectionSelect.appendChild(option);
+      });
+
+      connectionSelect.addEventListener('change', async (e) => {
+        await window.StorageService.saveSetting('activeConnectionId', e.target.value);
+      });
+    }
+
+    const promptSelect = document.getElementById('my-ai-prompt-select');
+    if (promptSelect) {
+      settings.prompts.forEach(prompt => {
+        const option = document.createElement('option');
+        option.value = prompt.id;
+        option.textContent = prompt.name;
+        option.selected = prompt.id === settings.activePromptId;
+        promptSelect.appendChild(option);
+      });
+
+      promptSelect.addEventListener('change', async (e) => {
+        await window.StorageService.saveSetting('activePromptId', e.target.value);
+      });
+    }
+
     document.getElementById('my-ai-btn').addEventListener('click', handleSummarizeClick);
     document.getElementById('my-ai-settings-btn').addEventListener('click', () => {
       chrome.runtime.sendMessage({ action: 'openOptions' });
@@ -281,7 +321,9 @@ async function handleSummarizeClick() {
     status.innerText = window.I18n.t('loading') || 'Summarizing with AI...';
 
     const settings = await window.StorageService.getSettings();
-    const systemPrompt = settings.systemPrompt || window.I18n.t('defaultPrompt');
+    const activePromptId = document.getElementById('my-ai-prompt-select')?.value || settings.activePromptId;
+    const activePrompt = settings.prompts.find(p => p.id === activePromptId) || settings.prompts[0];
+    const systemPrompt = activePrompt?.content || window.I18n.t('defaultPrompt');
 
     let fullSummary = "";
     const summary = await window.ApiService.summarize(
@@ -368,6 +410,40 @@ async function init() {
       }
     }
   }).observe(document, { subtree: true, childList: true });
+
+  // Listen for storage changes to keep UI in sync
+  chrome.storage.onChanged.addListener(async (changes, namespace) => {
+    if (namespace === 'sync') {
+      const promptSelect = document.getElementById('my-ai-prompt-select');
+      const connectionSelect = document.getElementById('my-ai-connection-select');
+      
+      if ((promptSelect || connectionSelect) && (changes.prompts || changes.activePromptId || changes.connections || changes.activeConnectionId)) {
+        const settings = await window.StorageService.getSettings();
+        
+        if (promptSelect) {
+          promptSelect.innerHTML = '';
+          settings.prompts.forEach(prompt => {
+            const option = document.createElement('option');
+            option.value = prompt.id;
+            option.textContent = prompt.name;
+            option.selected = prompt.id === settings.activePromptId;
+            promptSelect.appendChild(option);
+          });
+        }
+
+        if (connectionSelect) {
+          connectionSelect.innerHTML = '';
+          settings.connections.forEach(conn => {
+            const option = document.createElement('option');
+            option.value = conn.id;
+            option.textContent = conn.name;
+            option.selected = conn.id === settings.activeConnectionId;
+            connectionSelect.appendChild(option);
+          });
+        }
+      }
+    }
+  });
 }
 
 // Start

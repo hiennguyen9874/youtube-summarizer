@@ -40,21 +40,25 @@ function cacheElements() {
     
     // Settings
     languageSelect: document.getElementById('languageSelect'),
+    
+    // Connection
+    connectionSelect: document.getElementById('connectionSelect'),
+    addConnectionBtn: document.getElementById('addConnectionBtn'),
+    deleteConnectionBtn: document.getElementById('deleteConnectionBtn'),
+    connectionName: document.getElementById('connectionName'),
     providerSelect: document.getElementById('providerSelect'),
-    
-    // OpenAI
-    openaiSettings: document.getElementById('openaiSettings'),
-    openaiApiKey: document.getElementById('openaiApiKey'),
-    openaiBaseUrl: document.getElementById('openaiBaseUrl'),
-    openaiModel: document.getElementById('openaiModel'),
-    
-    // Gemini
-    geminiSettings: document.getElementById('geminiSettings'),
-    geminiApiKey: document.getElementById('geminiApiKey'),
-    geminiBaseUrl: document.getElementById('geminiBaseUrl'),
-    geminiModel: document.getElementById('geminiModel'),
+    providerLabel: document.getElementById('providerLabel'),
+    baseUrlLabel: document.getElementById('baseUrlLabel'),
+    modelLabel: document.getElementById('modelLabel'),
+    apiKey: document.getElementById('apiKey'),
+    baseUrl: document.getElementById('baseUrl'),
+    model: document.getElementById('model'),
     
     // System Prompt
+    promptSelect: document.getElementById('promptSelect'),
+    addPromptBtn: document.getElementById('addPromptBtn'),
+    deletePromptBtn: document.getElementById('deletePromptBtn'),
+    promptName: document.getElementById('promptName'),
     systemPrompt: document.getElementById('systemPrompt'),
     
     // Manual Input
@@ -81,26 +85,84 @@ async function loadSettings() {
   // Language
   elements.languageSelect.value = settings.language || 'en';
   
-  // Provider
-  elements.providerSelect.value = settings.provider || 'openai';
+  // Connections
+  renderConnectionSelect(settings.connections, settings.activeConnectionId);
+  const activeConnection = settings.connections.find(c => c.id === settings.activeConnectionId) || settings.connections[0];
   
-  // OpenAI
-  elements.openaiApiKey.value = settings.openai?.apiKey || '';
-  elements.openaiBaseUrl.value = settings.openai?.baseUrl || 'https://api.openai.com/v1';
-  elements.openaiModel.value = settings.openai?.model || 'gpt-4o-mini';
+  if (activeConnection) {
+    elements.connectionName.value = activeConnection.name || '';
+    elements.providerSelect.value = activeConnection.provider || 'openai';
+    elements.apiKey.value = activeConnection.apiKey || '';
+    elements.baseUrl.value = activeConnection.baseUrl || '';
+    elements.model.value = activeConnection.model || '';
+    
+    updateConnectionActions(settings.activeConnectionId);
+  }
   
-  // Gemini
-  elements.geminiApiKey.value = settings.gemini?.apiKey || '';
-  elements.geminiBaseUrl.value = settings.gemini?.baseUrl || 'https://generativelanguage.googleapis.com';
-  elements.geminiModel.value = settings.gemini?.model || 'gemini-2.0-flash';
-  
-  // System Prompt
-  elements.systemPrompt.value = settings.systemPrompt || '';
+  // Prompts
+  renderPromptSelect(settings.prompts, settings.activePromptId);
+  const activePrompt = settings.prompts.find(p => p.id === settings.activePromptId) || settings.prompts[0];
+  elements.systemPrompt.value = activePrompt?.content || '';
+  elements.promptName.value = activePrompt?.name || '';
+  elements.promptName.classList.toggle('hidden', settings.activePromptId === 'default');
+  updatePromptActions(settings.activePromptId);
   
   // If system prompt is empty, set placeholder with default
   if (!elements.systemPrompt.value) {
     elements.systemPrompt.placeholder = window.I18n.t('defaultPrompt');
   }
+}
+
+/**
+ * Update connection action buttons state
+ */
+function updateConnectionActions(activeConnectionId) {
+  // Can delete if more than 1 connection
+  chrome.storage.sync.get('connections', (result) => {
+    const connections = result.connections || window.StorageService.DEFAULT_SETTINGS.connections;
+    const canDelete = connections.length > 1;
+    elements.deleteConnectionBtn.disabled = !canDelete;
+    elements.deleteConnectionBtn.style.opacity = canDelete ? '1' : '0.3';
+    elements.deleteConnectionBtn.style.cursor = canDelete ? 'pointer' : 'not-allowed';
+  });
+}
+
+/**
+ * Render connection select options
+ */
+function renderConnectionSelect(connections, activeConnectionId) {
+  elements.connectionSelect.innerHTML = '';
+  connections.forEach(conn => {
+    const option = document.createElement('option');
+    option.value = conn.id;
+    option.textContent = conn.name;
+    option.selected = conn.id === activeConnectionId;
+    elements.connectionSelect.appendChild(option);
+  });
+}
+
+/**
+ * Update prompt action buttons state
+ */
+function updatePromptActions(activePromptId) {
+  const isDefault = activePromptId === 'default';
+  elements.deletePromptBtn.disabled = isDefault;
+  elements.deletePromptBtn.style.opacity = isDefault ? '0.3' : '1';
+  elements.deletePromptBtn.style.cursor = isDefault ? 'not-allowed' : 'pointer';
+}
+
+/**
+ * Render prompt select options
+ */
+function renderPromptSelect(prompts, activePromptId) {
+  elements.promptSelect.innerHTML = '';
+  prompts.forEach(prompt => {
+    const option = document.createElement('option');
+    option.value = prompt.id;
+    option.textContent = prompt.name;
+    option.selected = prompt.id === activePromptId;
+    elements.promptSelect.appendChild(option);
+  });
 }
 
 /**
@@ -113,17 +175,26 @@ function attachEventListeners() {
   // Language change
   elements.languageSelect.addEventListener('change', handleLanguageChange);
   
+  // Connection management
+  elements.connectionSelect.addEventListener('change', handleConnectionSelectChange);
+  elements.addConnectionBtn.addEventListener('click', handleAddConnection);
+  elements.deleteConnectionBtn.addEventListener('click', handleDeleteConnection);
+  
   // Provider change
   elements.providerSelect.addEventListener('change', handleProviderChange);
   
   // Settings inputs (debounced save)
   const saveDebounced = debounce(saveSettings, 500);
-  elements.openaiApiKey.addEventListener('input', saveDebounced);
-  elements.openaiBaseUrl.addEventListener('input', saveDebounced);
-  elements.openaiModel.addEventListener('input', saveDebounced);
-  elements.geminiApiKey.addEventListener('input', saveDebounced);
-  elements.geminiBaseUrl.addEventListener('input', saveDebounced);
-  elements.geminiModel.addEventListener('input', saveDebounced);
+  elements.connectionName.addEventListener('input', saveDebounced);
+  elements.apiKey.addEventListener('input', saveDebounced);
+  elements.baseUrl.addEventListener('input', saveDebounced);
+  elements.model.addEventListener('input', saveDebounced);
+  
+  // Prompts
+  elements.promptSelect.addEventListener('change', handlePromptSelectChange);
+  elements.addPromptBtn.addEventListener('click', handleAddPrompt);
+  elements.deletePromptBtn.addEventListener('click', handleDeletePrompt);
+  elements.promptName.addEventListener('input', saveDebounced);
   elements.systemPrompt.addEventListener('input', saveDebounced);
   
   // Summarize button
@@ -161,41 +232,227 @@ async function handleLanguageChange() {
  * Handle provider change
  */
 async function handleProviderChange() {
-  const provider = elements.providerSelect.value;
-  await window.StorageService.saveSetting('provider', provider);
   updateProviderSettingsVisibility();
+  await saveSettings();
 }
 
 /**
- * Update provider settings visibility based on selected provider
+ * Update provider settings visibility and labels
  */
 function updateProviderSettingsVisibility() {
   const provider = elements.providerSelect.value;
-  elements.openaiSettings.classList.toggle('hidden', provider !== 'openai');
-  elements.geminiSettings.classList.toggle('hidden', provider !== 'gemini');
+  const isOpenAI = provider === 'openai';
+  
+  elements.providerLabel.textContent = isOpenAI ? 'OpenAI' : 'Gemini';
+  elements.baseUrlLabel.textContent = isOpenAI ? 'OpenAI' : 'Gemini';
+  elements.modelLabel.textContent = isOpenAI ? 'OpenAI' : 'Gemini';
+  
+  if (!elements.baseUrl.value || elements.baseUrl.value === 'https://api.openai.com/v1' || elements.baseUrl.value === 'https://generativelanguage.googleapis.com') {
+    elements.baseUrl.placeholder = isOpenAI ? 'https://api.openai.com/v1' : 'https://generativelanguage.googleapis.com';
+  }
+  
+  if (!elements.model.value || elements.model.value === 'gpt-4o-mini' || elements.model.value === 'gemini-2.0-flash') {
+    elements.model.placeholder = isOpenAI ? 'gpt-4o-mini' : 'gemini-2.0-flash';
+  }
+}
+
+/**
+ * Handle connection selection change
+ */
+async function handleConnectionSelectChange() {
+  const settings = await window.StorageService.getSettings();
+  const connectionId = elements.connectionSelect.value;
+  const connection = settings.connections.find(c => c.id === connectionId);
+  
+  if (connection) {
+    elements.connectionName.value = connection.name;
+    elements.providerSelect.value = connection.provider;
+    elements.apiKey.value = connection.apiKey;
+    elements.baseUrl.value = connection.baseUrl;
+    elements.model.value = connection.model;
+    
+    await window.StorageService.saveSetting('activeConnectionId', connectionId);
+    updateProviderSettingsVisibility();
+    updateConnectionActions(connectionId);
+  }
+}
+
+/**
+ * Handle add connection
+ */
+async function handleAddConnection() {
+  const settings = await window.StorageService.getSettings();
+  const newId = 'conn_' + Date.now();
+  const newConnection = {
+    id: newId,
+    name: 'New Connection',
+    provider: 'openai',
+    apiKey: '',
+    baseUrl: 'https://api.openai.com/v1',
+    model: 'gpt-4o-mini'
+  };
+  
+  const updatedConnections = [...settings.connections, newConnection];
+  await window.StorageService.saveAllSettings({
+    connections: updatedConnections,
+    activeConnectionId: newId
+  });
+  
+  renderConnectionSelect(updatedConnections, newId);
+  elements.connectionName.value = 'New Connection';
+  elements.providerSelect.value = 'openai';
+  elements.apiKey.value = '';
+  elements.baseUrl.value = 'https://api.openai.com/v1';
+  elements.model.value = 'gpt-4o-mini';
+  
+  updateProviderSettingsVisibility();
+  updateConnectionActions(newId);
+  elements.connectionName.focus();
+}
+
+/**
+ * Handle delete connection
+ */
+async function handleDeleteConnection() {
+  const connectionId = elements.connectionSelect.value;
+  const settings = await window.StorageService.getSettings();
+  
+  if (settings.connections.length <= 1) return;
+  
+  const updatedConnections = settings.connections.filter(c => c.id !== connectionId);
+  const newActiveId = updatedConnections[0].id;
+  
+  await window.StorageService.saveAllSettings({
+    connections: updatedConnections,
+    activeConnectionId: newActiveId
+  });
+  
+  renderConnectionSelect(updatedConnections, newActiveId);
+  handleConnectionSelectChange(); // Update form with new active connection
+}
+
+/**
+ * Handle prompt selection change
+ */
+async function handlePromptSelectChange() {
+  const settings = await window.StorageService.getSettings();
+  const promptId = elements.promptSelect.value;
+  const prompt = settings.prompts.find(p => p.id === promptId);
+  
+  if (prompt) {
+    elements.systemPrompt.value = prompt.content;
+    elements.promptName.value = prompt.name;
+    await window.StorageService.saveSetting('activePromptId', promptId);
+    
+    // Toggle prompt name visibility (only hide if it's the default one)
+    elements.promptName.classList.toggle('hidden', promptId === 'default');
+    updatePromptActions(promptId);
+  }
+}
+
+/**
+ * Handle add prompt
+ */
+async function handleAddPrompt() {
+  const settings = await window.StorageService.getSettings();
+  const newId = 'prompt_' + Date.now();
+  const newPrompt = {
+    id: newId,
+    name: 'New Prompt',
+    content: ''
+  };
+  
+  const updatedPrompts = [...settings.prompts, newPrompt];
+  await window.StorageService.saveAllSettings({
+    prompts: updatedPrompts,
+    activePromptId: newId
+  });
+  
+  renderPromptSelect(updatedPrompts, newId);
+  elements.systemPrompt.value = '';
+  elements.promptName.value = 'New Prompt';
+  elements.promptName.classList.remove('hidden');
+  updatePromptActions(newId);
+  elements.systemPrompt.focus();
+}
+
+/**
+ * Handle delete prompt
+ */
+async function handleDeletePrompt() {
+  const promptId = elements.promptSelect.value;
+  if (promptId === 'default') return; // Cannot delete default prompt
+  
+  const settings = await window.StorageService.getSettings();
+  const updatedPrompts = settings.prompts.filter(p => p.id !== promptId);
+  const newActiveId = 'default';
+  
+  await window.StorageService.saveAllSettings({
+    prompts: updatedPrompts,
+    activePromptId: newActiveId
+  });
+  
+  renderPromptSelect(updatedPrompts, newActiveId);
+  const defaultPrompt = updatedPrompts.find(p => p.id === 'default');
+  elements.systemPrompt.value = defaultPrompt.content;
+  elements.promptName.value = defaultPrompt.name;
+  elements.promptName.classList.add('hidden');
+  updatePromptActions(newActiveId);
 }
 
 /**
  * Save all settings to storage
  */
 async function saveSettings() {
-  const settings = {
+  const settings = await window.StorageService.getSettings();
+  const activePromptId = elements.promptSelect.value;
+  const activeConnectionId = elements.connectionSelect.value;
+  
+  const updatedPrompts = settings.prompts.map(p => {
+    if (p.id === activePromptId) {
+      return {
+        ...p,
+        name: elements.promptName.value || p.name,
+        content: elements.systemPrompt.value
+      };
+    }
+    return p;
+  });
+
+  const updatedConnections = settings.connections.map(c => {
+    if (c.id === activeConnectionId) {
+      return {
+        ...c,
+        name: elements.connectionName.value || c.name,
+        provider: elements.providerSelect.value,
+        apiKey: elements.apiKey.value,
+        baseUrl: elements.baseUrl.value,
+        model: elements.model.value
+      };
+    }
+    return c;
+  });
+
+  // Update names in selects if changed
+  const selectedPromptOption = elements.promptSelect.options[elements.promptSelect.selectedIndex];
+  if (selectedPromptOption) {
+    selectedPromptOption.textContent = elements.promptName.value || 'Untitled';
+  }
+  
+  const selectedConnectionOption = elements.connectionSelect.options[elements.connectionSelect.selectedIndex];
+  if (selectedConnectionOption) {
+    selectedConnectionOption.textContent = elements.connectionName.value || 'Untitled';
+  }
+
+  const newSettings = {
     language: elements.languageSelect.value,
-    provider: elements.providerSelect.value,
-    openai: {
-      apiKey: elements.openaiApiKey.value,
-      baseUrl: elements.openaiBaseUrl.value || 'https://api.openai.com/v1',
-      model: elements.openaiModel.value || 'gpt-4o-mini'
-    },
-    gemini: {
-      apiKey: elements.geminiApiKey.value,
-      baseUrl: elements.geminiBaseUrl.value || 'https://generativelanguage.googleapis.com',
-      model: elements.geminiModel.value || 'gemini-2.0-flash'
-    },
-    systemPrompt: elements.systemPrompt.value
+    connections: updatedConnections,
+    activeConnectionId: activeConnectionId,
+    prompts: updatedPrompts,
+    activePromptId: activePromptId
   };
   
-  await window.StorageService.saveAllSettings(settings);
+  await window.StorageService.saveAllSettings(newSettings);
 }
 
 /**
@@ -215,7 +472,8 @@ async function handleSummarize() {
   
   // Get system prompt (use default if empty)
   const settings = await window.StorageService.getSettings();
-  const systemPrompt = settings.systemPrompt || window.I18n.t('defaultPrompt');
+  const activePrompt = settings.prompts.find(p => p.id === settings.activePromptId) || settings.prompts[0];
+  const systemPrompt = activePrompt?.content || window.I18n.t('defaultPrompt');
   
   try {
     setLoading(true);

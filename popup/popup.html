@@ -30,6 +30,23 @@
         </select>
       </div>
 
+      <!-- Connection -->
+      <div class="form-group">
+        <div class="prompt-header">
+          <label data-i18n="connection">Connection</label>
+          <div class="prompt-actions">
+            <select id="connectionSelect" class="form-control select-small"></select>
+            <button id="addConnectionBtn" class="btn-icon" title="Add Connection">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <button id="deleteConnectionBtn" class="btn-icon" title="Delete Connection">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
+          </div>
+        </div>
+        <input type="text" id="connectionName" class="form-control mb-1 hidden" data-i18n-placeholder="connectionName">
+      </div>
+
       <!-- Provider -->
       <div class="form-group">
         <label data-i18n="provider">AI Provider</label>
@@ -39,41 +56,37 @@
         </select>
       </div>
 
-      <!-- OpenAI Settings -->
-      <div id="openaiSettings" class="provider-settings">
+      <!-- Provider Settings -->
+      <div id="providerSettings" class="provider-settings">
         <div class="form-group">
-          <label>OpenAI <span data-i18n="apiKey">API Key</span></label>
-          <input type="password" id="openaiApiKey" class="form-control" data-i18n-placeholder="apiKeyPlaceholder">
+          <label><span id="providerLabel">AI</span> <span data-i18n="apiKey">API Key</span></label>
+          <input type="password" id="apiKey" class="form-control" data-i18n-placeholder="apiKeyPlaceholder">
         </div>
         <div class="form-group">
-          <label>OpenAI <span data-i18n="baseUrl">Base URL</span></label>
-          <input type="text" id="openaiBaseUrl" class="form-control" placeholder="https://api.openai.com/v1">
+          <label><span id="baseUrlLabel">AI</span> <span data-i18n="baseUrl">Base URL</span></label>
+          <input type="text" id="baseUrl" class="form-control">
         </div>
         <div class="form-group">
-          <label>OpenAI <span data-i18n="model">Model</span></label>
-          <input type="text" id="openaiModel" class="form-control" placeholder="gpt-4o-mini">
-        </div>
-      </div>
-
-      <!-- Gemini Settings -->
-      <div id="geminiSettings" class="provider-settings hidden">
-        <div class="form-group">
-          <label>Gemini <span data-i18n="apiKey">API Key</span></label>
-          <input type="password" id="geminiApiKey" class="form-control" data-i18n-placeholder="apiKeyPlaceholder">
-        </div>
-        <div class="form-group">
-          <label>Gemini <span data-i18n="baseUrl">Base URL</span></label>
-          <input type="text" id="geminiBaseUrl" class="form-control" placeholder="https://generativelanguage.googleapis.com">
-        </div>
-        <div class="form-group">
-          <label>Gemini <span data-i18n="model">Model</span></label>
-          <input type="text" id="geminiModel" class="form-control" placeholder="gemini-2.0-flash">
+          <label><span id="modelLabel">AI</span> <span data-i18n="model">Model</span></label>
+          <input type="text" id="model" class="form-control">
         </div>
       </div>
 
       <!-- System Prompt -->
       <div class="form-group">
-        <label data-i18n="systemPrompt">System Prompt</label>
+        <div class="prompt-header">
+          <label data-i18n="systemPrompt">System Prompt</label>
+          <div class="prompt-actions">
+            <select id="promptSelect" class="form-control select-small"></select>
+            <button id="addPromptBtn" class="btn-icon" title="Add New Prompt">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </button>
+            <button id="deletePromptBtn" class="btn-icon" title="Delete Prompt">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+            </button>
+          </div>
+        </div>
+        <input type="text" id="promptName" class="form-control mb-1 hidden" data-i18n-placeholder="promptName">
         <textarea id="systemPrompt" class="form-control" rows="3" data-i18n-placeholder="defaultPrompt"></textarea>
       </div>
     </section>

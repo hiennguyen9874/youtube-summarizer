@@ -262,6 +262,50 @@ select.form-control {
   font-size: 13px;
 }
 
+/* Prompt Management */
+.prompt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.prompt-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.select-small {
+  padding: 4px 8px;
+  font-size: 12px;
+  height: 28px;
+  width: auto;
+  min-width: 120px;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: #f0f0f0;
+  color: #cc0000;
+}
+
+.mb-1 {
+  margin-bottom: 8px;
+}
+
 /* Utility classes */
 .hidden {
   display: none !important;
@@ -351,5 +395,10 @@ select.form-control {
   .error-section {
     background-color: #2a1a1a;
     border-color: #4a2a2a;
+  }
+
+  .btn-icon:hover {
+    background-color: #333;
+    color: #ff3333;
   }
 }
