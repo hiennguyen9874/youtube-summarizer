@@ -3,7 +3,11 @@
   "name": "YouTube AI Summarizer",
   "version": "1.0.0",
   "description": "Summarize YouTube videos using AI (OpenAI/Gemini)",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
   "background": {
     "service_worker": "background.js"
   },
@@ -30,7 +34,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.youtube.com/watch*"],
+      "matches": [
+        "https://www.youtube.com/watch*"
+      ],
       "js": [
         "vendor/marked.min.js",
         "utils/storage.js",
@@ -38,13 +44,19 @@
         "utils/api.js",
         "content/content.js"
       ],
-      "css": ["content/sidebar.css"]
+      "css": [
+        "content/sidebar.css"
+      ]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["locales/messages.json"],
-      "matches": ["https://www.youtube.com/*"]
+      "resources": [
+        "locales/messages.json"
+      ],
+      "matches": [
+        "https://www.youtube.com/*"
+      ]
     }
   ]
 }

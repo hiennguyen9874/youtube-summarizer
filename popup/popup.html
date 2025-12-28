@@ -1,134 +1,268 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube AI Summarizer</title>
-  <link rel="stylesheet" href="popup.css">
-</head>
-<body>
-  <div class="container">
-    <!-- Header -->
-    <header class="header">
-      <h1 class="app-title" data-i18n="appName">YouTube AI Summarizer</h1>
-      <button id="settingsToggle" class="settings-toggle" title="Toggle Settings">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-      </button>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube AI Summarizer</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <h1 class="app-title" data-i18n="appName">YouTube AI Summarizer</h1>
+        <button
+          id="settingsToggle"
+          class="settings-toggle"
+          title="Toggle Settings"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            ></path>
+          </svg>
+        </button>
+      </header>
 
-    <!-- Settings Panel (collapsible) -->
-    <section id="settingsPanel" class="settings-panel hidden">
-      <!-- Language -->
-      <div class="form-group">
-        <label data-i18n="language">Language</label>
-        <select id="languageSelect" class="form-control">
-          <option value="en" data-i18n="english">English</option>
-          <option value="vi" data-i18n="vietnamese">Vietnamese</option>
-        </select>
-      </div>
+      <!-- Settings Panel (collapsible) -->
+      <section id="settingsPanel" class="settings-panel hidden">
+        <!-- Language -->
+        <div class="form-group">
+          <label data-i18n="language">Language</label>
+          <select id="languageSelect" class="form-control">
+            <option value="en" data-i18n="english">English</option>
+            <option value="vi" data-i18n="vietnamese">Vietnamese</option>
+          </select>
+        </div>
 
-      <!-- Connection -->
-      <div class="form-group">
-        <div class="prompt-header">
-          <label data-i18n="connection">Connection</label>
-          <div class="prompt-actions">
-            <select id="connectionSelect" class="form-control select-small"></select>
-            <button id="addConnectionBtn" class="btn-icon" title="Add Connection">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
-            <button id="deleteConnectionBtn" class="btn-icon" title="Delete Connection">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-            </button>
+        <!-- Connection -->
+        <div class="form-group">
+          <div class="prompt-header">
+            <label data-i18n="connection">Connection</label>
+            <div class="prompt-actions">
+              <select
+                id="connectionSelect"
+                class="form-control select-small"
+              ></select>
+              <button
+                id="addConnectionBtn"
+                class="btn-icon"
+                title="Add Connection"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <button
+                id="deleteConnectionBtn"
+                class="btn-icon"
+                title="Delete Connection"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  ></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <input
+            type="text"
+            id="connectionName"
+            class="form-control mb-1"
+            data-i18n-placeholder="connectionName"
+          />
+        </div>
+
+        <!-- Provider -->
+        <div class="form-group">
+          <label data-i18n="provider">AI Provider</label>
+          <select id="providerSelect" class="form-control">
+            <option value="openai">OpenAI</option>
+            <option value="gemini">Gemini</option>
+          </select>
+        </div>
+
+        <!-- Provider Settings -->
+        <div id="providerSettings" class="provider-settings">
+          <div class="form-group">
+            <label
+              ><span id="providerLabel">AI</span>
+              <span data-i18n="apiKey">API Key</span></label
+            >
+            <input
+              type="password"
+              id="apiKey"
+              class="form-control"
+              data-i18n-placeholder="apiKeyPlaceholder"
+            />
+          </div>
+          <div class="form-group">
+            <label
+              ><span id="baseUrlLabel">AI</span>
+              <span data-i18n="baseUrl">Base URL</span></label
+            >
+            <input type="text" id="baseUrl" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label
+              ><span id="modelLabel">AI</span>
+              <span data-i18n="model">Model</span></label
+            >
+            <input type="text" id="model" class="form-control" />
           </div>
         </div>
-        <input type="text" id="connectionName" class="form-control mb-1" data-i18n-placeholder="connectionName">
-      </div>
 
-      <!-- Provider -->
-      <div class="form-group">
-        <label data-i18n="provider">AI Provider</label>
-        <select id="providerSelect" class="form-control">
-          <option value="openai">OpenAI</option>
-          <option value="gemini">Gemini</option>
-        </select>
-      </div>
-
-      <!-- Provider Settings -->
-      <div id="providerSettings" class="provider-settings">
+        <!-- System Prompt -->
         <div class="form-group">
-          <label><span id="providerLabel">AI</span> <span data-i18n="apiKey">API Key</span></label>
-          <input type="password" id="apiKey" class="form-control" data-i18n-placeholder="apiKeyPlaceholder">
-        </div>
-        <div class="form-group">
-          <label><span id="baseUrlLabel">AI</span> <span data-i18n="baseUrl">Base URL</span></label>
-          <input type="text" id="baseUrl" class="form-control">
-        </div>
-        <div class="form-group">
-          <label><span id="modelLabel">AI</span> <span data-i18n="model">Model</span></label>
-          <input type="text" id="model" class="form-control">
-        </div>
-      </div>
-
-      <!-- System Prompt -->
-      <div class="form-group">
-        <div class="prompt-header">
-          <label data-i18n="systemPrompt">System Prompt</label>
-          <div class="prompt-actions">
-            <select id="promptSelect" class="form-control select-small"></select>
-            <button id="addPromptBtn" class="btn-icon" title="Add New Prompt">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
-            <button id="deletePromptBtn" class="btn-icon" title="Delete Prompt">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-            </button>
+          <div class="prompt-header">
+            <label data-i18n="systemPrompt">System Prompt</label>
+            <div class="prompt-actions">
+              <select
+                id="promptSelect"
+                class="form-control select-small"
+              ></select>
+              <button id="addPromptBtn" class="btn-icon" title="Add New Prompt">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <button
+                id="deletePromptBtn"
+                class="btn-icon"
+                title="Delete Prompt"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path
+                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                  ></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
           </div>
+          <input
+            type="text"
+            id="promptName"
+            class="form-control mb-1 hidden"
+            data-i18n-placeholder="promptName"
+          />
+          <textarea
+            id="systemPrompt"
+            class="form-control"
+            rows="3"
+            data-i18n-placeholder="defaultPrompt"
+          ></textarea>
         </div>
-        <input type="text" id="promptName" class="form-control mb-1 hidden" data-i18n-placeholder="promptName">
-        <textarea id="systemPrompt" class="form-control" rows="3" data-i18n-placeholder="defaultPrompt"></textarea>
+      </section>
+
+      <!-- Manual Transcript Box -->
+      <section class="manual-input-section">
+        <div class="form-group">
+          <label data-i18n="manualTranscript">Manual Transcript</label>
+          <textarea
+            id="manualTranscript"
+            class="form-control"
+            rows="4"
+            data-i18n-placeholder="manualTranscriptPlaceholder"
+          ></textarea>
+        </div>
+      </section>
+
+      <!-- Main Action -->
+      <section class="main-action">
+        <button id="summarizeBtn" class="btn btn-primary">
+          <span data-i18n="summarize">Summarize</span>
+        </button>
+      </section>
+
+      <!-- Status -->
+      <div id="status" class="status hidden"></div>
+
+      <!-- Result -->
+      <section id="resultSection" class="result-section hidden">
+        <div class="result-header">
+          <h2 data-i18n="summary">Summary</h2>
+          <button
+            id="copyBtn"
+            class="btn btn-small"
+            data-i18n="copyToClipboard"
+          >
+            Copy
+          </button>
+        </div>
+        <div id="resultContent" class="result-content"></div>
+      </section>
+
+      <!-- Error -->
+      <div id="errorSection" class="error-section hidden">
+        <div class="error-content"></div>
       </div>
-    </section>
-
-    <!-- Manual Transcript Box -->
-    <section class="manual-input-section">
-      <div class="form-group">
-        <label data-i18n="manualTranscript">Manual Transcript</label>
-        <textarea id="manualTranscript" class="form-control" rows="4" data-i18n-placeholder="manualTranscriptPlaceholder"></textarea>
-      </div>
-    </section>
-
-    <!-- Main Action -->
-    <section class="main-action">
-      <button id="summarizeBtn" class="btn btn-primary">
-        <span data-i18n="summarize">Summarize</span>
-      </button>
-    </section>
-
-    <!-- Status -->
-    <div id="status" class="status hidden"></div>
-
-    <!-- Result -->
-    <section id="resultSection" class="result-section hidden">
-      <div class="result-header">
-        <h2 data-i18n="summary">Summary</h2>
-        <button id="copyBtn" class="btn btn-small" data-i18n="copyToClipboard">Copy</button>
-      </div>
-      <div id="resultContent" class="result-content"></div>
-    </section>
-
-    <!-- Error -->
-    <div id="errorSection" class="error-section hidden">
-      <div class="error-content"></div>
     </div>
-  </div>
 
-  <!-- Scripts -->
-  <script src="../vendor/marked.min.js"></script>
-  <script src="../utils/storage.js"></script>
-  <script src="../utils/i18n.js"></script>
-  <script src="../utils/api.js"></script>
-  <script src="popup.js"></script>
-</body>
+    <!-- Scripts -->
+    <script src="../vendor/marked.min.js"></script>
+    <script src="../utils/storage.js"></script>
+    <script src="../utils/i18n.js"></script>
+    <script src="../utils/api.js"></script>
+    <script src="popup.js"></script>
+  </body>
 </html>

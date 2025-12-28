@@ -3,86 +3,112 @@
  * Handles API requests to avoid Mixed Content and CORS issues
  */
 
-importScripts('utils/api.js');
+importScripts("utils/api.js");
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'summarize') {
-    const { provider, apiKey, baseUrl, model, transcript, systemPrompt } = request.data;
-    
-    // Call ApiService.summarize which will perform the actual fetch 
+  if (request.action === "summarize") {
+    const { provider, apiKey, baseUrl, model, transcript, systemPrompt } =
+      request.data;
+
+    // Call ApiService.summarize which will perform the actual fetch
     // because it's running in the background context
-    ApiService.summarize(provider, apiKey, baseUrl, model, transcript, systemPrompt)
-      .then(summary => {
+    ApiService.summarize(
+      provider,
+      apiKey,
+      baseUrl,
+      model,
+      transcript,
+      systemPrompt
+    )
+      .then((summary) => {
         sendResponse({ success: true, summary });
       })
-      .catch(error => {
-        console.error('Background summarization error:', error);
+      .catch((error) => {
+        console.error("Background summarization error:", error);
         sendResponse({ success: false, error: error.message });
       });
-      
+
     return true; // Keep message channel open for async response
   }
 
-  if (request.action === 'openOptions') {
+  if (request.action === "openOptions") {
     chrome.runtime.openOptionsPage();
     return false;
   }
 
-  if (request.action === 'EXTRACT_YOUTUBE_DATA') {
-    chrome.scripting.executeScript({
-      target: { tabId: sender.tab.id },
-      world: 'MAIN',
-      func: () => window.ytInitialPlayerResponse
-    }).then(results => {
-      sendResponse({ success: true, data: results[0]?.result });
-    }).catch(error => {
-      console.error('Extraction error:', error);
-      sendResponse({ success: false, error: error.message });
-    });
+  if (request.action === "EXTRACT_YOUTUBE_DATA") {
+    chrome.scripting
+      .executeScript({
+        target: { tabId: sender.tab.id },
+        world: "MAIN",
+        func: () => window.ytInitialPlayerResponse,
+      })
+      .then((results) => {
+        sendResponse({ success: true, data: results[0]?.result });
+      })
+      .catch((error) => {
+        console.error("Extraction error:", error);
+        sendResponse({ success: false, error: error.message });
+      });
     return true;
   }
 
-  if (request.action === 'FETCH_TRANSCRIPT') {
-    chrome.scripting.executeScript({
-      target: { tabId: sender.tab.id },
-      world: 'MAIN',
-      func: async (url) => {
-        const wait = (ms) => new Promise(res => setTimeout(res, ms));
-        let lastError;
-        
-        // Try up to 3 times with exponential backoff
-        for (let i = 0; i < 3; i++) {
-          try {
-            console.log(`[YouTube Summarizer] Fetch attempt ${i + 1} for transcript...`);
-            const response = await fetch(url);
-            
-            if (response.status === 429) {
-              console.warn(`[YouTube Summarizer] Received 429 (Too Many Requests). Retrying in ${2000 * Math.pow(2, i)}ms...`);
-              lastError = new Error('Too Many Requests (429)');
-              await wait(2000 * Math.pow(2, i));
-              continue;
+  if (request.action === "FETCH_TRANSCRIPT") {
+    chrome.scripting
+      .executeScript({
+        target: { tabId: sender.tab.id },
+        world: "MAIN",
+        func: async (url) => {
+          const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+          let lastError;
+
+          // Try up to 3 times with exponential backoff
+          for (let i = 0; i < 3; i++) {
+            try {
+              console.log(
+                `[YouTube Summarizer] Fetch attempt ${i + 1} for transcript...`
+              );
+              const response = await fetch(url, { credentials: "include" });
+
+              if (response.status === 429) {
+                console.warn(
+                  `[YouTube Summarizer] Received 429 (Too Many Requests). Retrying in ${
+                    2000 * Math.pow(2, i)
+                  }ms...`
+                );
+                lastError = new Error("Too Many Requests (429)");
+                await wait(2000 * Math.pow(2, i));
+                continue;
+              }
+
+              if (!response.ok) {
+                throw new Error(`Status: ${response.status}`);
+              }
+
+              return await response.text();
+            } catch (e) {
+              console.error(
+                `[YouTube Summarizer] Fetch attempt ${i + 1} failed:`,
+                e.message
+              );
+              lastError = e;
+              if (i < 2) await wait(2000 * Math.pow(2, i));
             }
-            
-            if (!response.ok) {
-              throw new Error(`Status: ${response.status}`);
-            }
-            
-            return await response.text();
-          } catch (e) {
-            console.error(`[YouTube Summarizer] Fetch attempt ${i + 1} failed:`, e.message);
-            lastError = e;
-            if (i < 2) await wait(2000 * Math.pow(2, i));
           }
-        }
-        throw lastError;
-      },
-      args: [request.url]
-    }).then(results => {
-      sendResponse({ success: true, xml: results[0]?.result });
-    }).catch(error => {
-      console.error('Main World transcript fetch error after retries:', error);
-      sendResponse({ success: false, error: error.message });
-    });
+          throw lastError;
+        },
+        args: [request.url],
+      })
+      .then((results) => {
+        sendResponse({ success: true, xml: results[0]?.result });
+      })
+      .catch((error) => {
+        console.error(
+          "Main World transcript fetch error after retries:",
+          error
+        );
+        sendResponse({ success: false, error: error.message });
+      });
     return true;
   }
 });
@@ -91,29 +117,30 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  * Handle streaming connections
  */
 chrome.runtime.onConnect.addListener((port) => {
-  if (port.name === 'summarize-stream') {
+  if (port.name === "summarize-stream") {
     port.onMessage.addListener(async (request) => {
-      if (request.action === 'summarize') {
-        const { provider, apiKey, baseUrl, model, transcript, systemPrompt } = request.data;
-        
+      if (request.action === "summarize") {
+        const { provider, apiKey, baseUrl, model, transcript, systemPrompt } =
+          request.data;
+
         try {
           await ApiService.summarize(
-            provider, 
-            apiKey, 
-            baseUrl, 
-            model, 
-            transcript, 
+            provider,
+            apiKey,
+            baseUrl,
+            model,
+            transcript,
             systemPrompt,
             (chunk) => {
               // Send each chunk back to the caller
               port.postMessage({ success: true, chunk, done: false });
             }
           );
-          
+
           // Send final message to indicate completion
           port.postMessage({ success: true, done: true });
         } catch (error) {
-          console.error('Background streaming error:', error);
+          console.error("Background streaming error:", error);
           port.postMessage({ success: false, error: error.message });
         }
       }

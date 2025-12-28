@@ -4,7 +4,7 @@
  */
 
 let translations = {};
-let currentLanguage = 'en';
+let currentLanguage = "en";
 
 /**
  * Load translations from messages.json
@@ -12,10 +12,13 @@ let currentLanguage = 'en';
  */
 async function loadTranslations() {
   try {
-    const response = await fetch(chrome.runtime.getURL('locales/messages.json'));
+    const response = await fetch(
+      chrome.runtime.getURL("locales/messages.json"),
+      { credentials: "include" }
+    );
     translations = await response.json();
   } catch (error) {
-    console.error('Failed to load translations:', error);
+    console.error("Failed to load translations:", error);
     translations = { en: {}, vi: {} };
   }
 }
@@ -43,7 +46,8 @@ function getLanguage() {
  * @returns {string|null} Translated text
  */
 function t(key, fallback = null) {
-  const langTranslations = translations[currentLanguage] || translations['en'] || {};
+  const langTranslations =
+    translations[currentLanguage] || translations["en"] || {};
   const value = langTranslations[key];
   if (value !== undefined) return value;
   return fallback;
@@ -53,13 +57,13 @@ function t(key, fallback = null) {
  * Apply translations to all elements with data-i18n attribute
  */
 function applyTranslations() {
-  document.querySelectorAll('[data-i18n]').forEach((element) => {
-    const key = element.getAttribute('data-i18n');
+  document.querySelectorAll("[data-i18n]").forEach((element) => {
+    const key = element.getAttribute("data-i18n");
     const translated = t(key);
-    
+
     if (translated) {
       // Handle different element types
-      if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+      if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
         if (element.placeholder !== undefined) {
           element.placeholder = translated;
         }
@@ -68,10 +72,10 @@ function applyTranslations() {
       }
     }
   });
-  
+
   // Handle data-i18n-placeholder separately
-  document.querySelectorAll('[data-i18n-placeholder]').forEach((element) => {
-    const key = element.getAttribute('data-i18n-placeholder');
+  document.querySelectorAll("[data-i18n-placeholder]").forEach((element) => {
+    const key = element.getAttribute("data-i18n-placeholder");
     const translated = t(key);
     if (translated) {
       element.placeholder = translated;
@@ -97,5 +101,5 @@ window.I18n = {
   getLanguage,
   t,
   applyTranslations,
-  initI18n
+  initI18n,
 };
