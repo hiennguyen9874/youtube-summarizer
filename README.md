@@ -94,8 +94,3 @@ youtube-summarizer/
 ### Sidebar not appearing
 - The extension works best on standard YouTube watch pages (`youtube.com/watch?v=...`).
 - Wait a few seconds for the page to fully load.
-
-## 📄 License
-
-MIT License - feel free to use and modify for your own projects!
-
