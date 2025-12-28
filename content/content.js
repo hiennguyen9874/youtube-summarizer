@@ -46,21 +46,25 @@ async function getTranscript() {
 async function getCaptionTracks(videoId) {
   let playerResponse = null;
 
-  const scripts = document.querySelectorAll('script');
-  for (const script of scripts) {
-    if (script.textContent.includes('var ytInitialPlayerResponse =')) {
-      playerResponse = extractJsonFromScript(script.textContent);
-      break;
+  // 1. Try to get data from Main World via Background Script (Recommended fix for 429)
+  try {
+    const response = await chrome.runtime.sendMessage({ action: 'EXTRACT_YOUTUBE_DATA' });
+    if (response && response.success && response.data) {
+      playerResponse = response.data;
+      console.log('Successfully extracted playerResponse from Main World');
     }
+  } catch (error) {
+    console.error('Failed to extract data from Main World:', error);
   }
 
+  // 2. Fallback: Search scripts in current world
   if (!playerResponse) {
-    try {
-      const response = await fetch(`https://www.youtube.com/watch?v=${videoId}`);
-      const html = await response.text();
-      playerResponse = extractJsonFromScript(html);
-    } catch (error) {
-      console.error('Fetch failed:', error);
+    const scripts = document.querySelectorAll('script');
+    for (const script of scripts) {
+      if (script.textContent.includes('var ytInitialPlayerResponse =')) {
+        playerResponse = extractJsonFromScript(script.textContent);
+        if (playerResponse) break;
+      }
     }
   }
 

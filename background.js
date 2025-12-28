@@ -27,6 +27,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     chrome.runtime.openOptionsPage();
     return false;
   }
+
+  if (request.action === 'EXTRACT_YOUTUBE_DATA') {
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      world: 'MAIN',
+      func: () => window.ytInitialPlayerResponse
+    }).then(results => {
+      sendResponse({ success: true, data: results[0]?.result });
+    }).catch(error => {
+      console.error('Extraction error:', error);
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
 });
 
 /**
