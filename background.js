@@ -41,6 +41,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (request.action === 'FETCH_TRANSCRIPT') {
+    fetch(request.url)
+      .then(response => {
+        if (!response.ok) throw new Error(`Status: ${response.status}`);
+        return response.text();
+      })
+      .then(xml => {
+        sendResponse({ success: true, xml });
+      })
+      .catch(error => {
+        console.error('Background transcript fetch error:', error);
+        sendResponse({ success: false, error: error.message });
+      });
+    return true;
+  }
 });
 
 /**

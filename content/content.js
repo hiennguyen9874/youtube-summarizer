@@ -161,13 +161,33 @@ function findPreferredTrack(tracks) {
 async function fetchTranscript(baseUrl) {
   const url = baseUrl.includes('fmt=') ? baseUrl : `${baseUrl}&fmt=srv3`;
   
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch transcript: ${response.status}`);
-  }
+  console.log(`[YouTube Summarizer] Fetching transcript XML from: ${url}`);
+  
+  try {
+    const response = await chrome.runtime.sendMessage({ 
+      action: 'FETCH_TRANSCRIPT', 
+      url: url 
+    });
 
-  const xml = await response.text();
-  return parseTranscriptXml(xml);
+    if (response && response.success) {
+      console.log('[YouTube Summarizer] Successfully received transcript XML from background script');
+      return parseTranscriptXml(response.xml);
+    } else {
+      console.error('[YouTube Summarizer] Background transcript fetch failed:', response?.error);
+      throw new Error(response?.error || 'Failed to fetch transcript via background');
+    }
+  } catch (error) {
+    console.error('[YouTube Summarizer] Error during background transcript fetch:', error);
+    
+    // Last resort: Try local fetch if background fails (might hit 429 again)
+    console.log('[YouTube Summarizer] Attempting local fetch as last resort...');
+    const localResponse = await fetch(url);
+    if (!localResponse.ok) {
+      throw new Error(`Failed to fetch transcript: ${localResponse.status}`);
+    }
+    const xml = await localResponse.text();
+    return parseTranscriptXml(xml);
+  }
 }
 
 /**
