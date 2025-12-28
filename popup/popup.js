@@ -136,6 +136,7 @@ function renderConnectionSelect(connections, activeConnectionId) {
     const option = document.createElement('option');
     option.value = conn.id;
     option.textContent = conn.name;
+    option.title = conn.name;
     option.selected = conn.id === activeConnectionId;
     elements.connectionSelect.appendChild(option);
   });
@@ -160,6 +161,7 @@ function renderPromptSelect(prompts, activePromptId) {
     const option = document.createElement('option');
     option.value = prompt.id;
     option.textContent = prompt.name;
+    option.title = prompt.name;
     option.selected = prompt.id === activePromptId;
     elements.promptSelect.appendChild(option);
   });
@@ -189,7 +191,9 @@ function attachEventListeners() {
     // Update name in select if changed
     const selectedOption = elements.connectionSelect.options[elements.connectionSelect.selectedIndex];
     if (selectedOption) {
-      selectedOption.textContent = elements.connectionName.value || 'Untitled';
+      const newName = elements.connectionName.value || 'Untitled';
+      selectedOption.textContent = newName;
+      selectedOption.title = newName;
     }
     saveDebounced();
   });
@@ -205,7 +209,9 @@ function attachEventListeners() {
     // Update name in select if changed
     const selectedOption = elements.promptSelect.options[elements.promptSelect.selectedIndex];
     if (selectedOption) {
-      selectedOption.textContent = elements.promptName.value || 'Untitled';
+      const newName = elements.promptName.value || 'Untitled';
+      selectedOption.textContent = newName;
+      selectedOption.title = newName;
     }
     saveDebounced();
   });

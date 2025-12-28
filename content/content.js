@@ -230,6 +230,7 @@ async function createSidebarUI() {
         const option = document.createElement('option');
         option.value = conn.id;
         option.textContent = conn.name;
+        option.title = conn.name;
         option.selected = conn.id === settings.activeConnectionId;
         connectionSelect.appendChild(option);
       });
@@ -245,6 +246,7 @@ async function createSidebarUI() {
         const option = document.createElement('option');
         option.value = prompt.id;
         option.textContent = prompt.name;
+        option.title = prompt.name;
         option.selected = prompt.id === settings.activePromptId;
         promptSelect.appendChild(option);
       });
@@ -426,6 +428,7 @@ async function init() {
             const option = document.createElement('option');
             option.value = prompt.id;
             option.textContent = prompt.name;
+            option.title = prompt.name;
             option.selected = prompt.id === settings.activePromptId;
             promptSelect.appendChild(option);
           });
@@ -437,6 +440,7 @@ async function init() {
             const option = document.createElement('option');
             option.value = conn.id;
             option.textContent = conn.name;
+            option.title = conn.name;
             option.selected = conn.id === settings.activeConnectionId;
             connectionSelect.appendChild(option);
           });
