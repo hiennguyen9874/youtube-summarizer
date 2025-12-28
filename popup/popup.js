@@ -185,7 +185,14 @@ function attachEventListeners() {
   
   // Settings inputs (debounced save)
   const saveDebounced = debounce(saveSettings, 500);
-  elements.connectionName.addEventListener('input', saveDebounced);
+  elements.connectionName.addEventListener('input', () => {
+    // Update name in select if changed
+    const selectedOption = elements.connectionSelect.options[elements.connectionSelect.selectedIndex];
+    if (selectedOption) {
+      selectedOption.textContent = elements.connectionName.value || 'Untitled';
+    }
+    saveDebounced();
+  });
   elements.apiKey.addEventListener('input', saveDebounced);
   elements.baseUrl.addEventListener('input', saveDebounced);
   elements.model.addEventListener('input', saveDebounced);
@@ -194,7 +201,14 @@ function attachEventListeners() {
   elements.promptSelect.addEventListener('change', handlePromptSelectChange);
   elements.addPromptBtn.addEventListener('click', handleAddPrompt);
   elements.deletePromptBtn.addEventListener('click', handleDeletePrompt);
-  elements.promptName.addEventListener('input', saveDebounced);
+  elements.promptName.addEventListener('input', () => {
+    // Update name in select if changed
+    const selectedOption = elements.promptSelect.options[elements.promptSelect.selectedIndex];
+    if (selectedOption) {
+      selectedOption.textContent = elements.promptName.value || 'Untitled';
+    }
+    saveDebounced();
+  });
   elements.systemPrompt.addEventListener('input', saveDebounced);
   
   // Summarize button
@@ -307,7 +321,10 @@ async function handleAddConnection() {
   
   updateProviderSettingsVisibility();
   updateConnectionActions(newId);
+  
+  // Focus and select connection name for easy renaming
   elements.connectionName.focus();
+  elements.connectionName.select();
 }
 
 /**
