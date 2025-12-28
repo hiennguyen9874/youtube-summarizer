@@ -169,12 +169,13 @@ async function fetchTranscript(baseUrl) {
       url: url 
     });
 
-    if (response && response.success) {
+    if (response && response.success && response.xml) {
       console.log('[YouTube Summarizer] Successfully received transcript XML from Main World fetch');
       return parseTranscriptXml(response.xml);
     } else {
-      console.error('[YouTube Summarizer] Main World transcript fetch failed:', response?.error);
-      throw new Error(response?.error || 'Failed to fetch transcript via Main World');
+      const errorMsg = response?.error || 'Failed to fetch transcript via Main World';
+      console.error('[YouTube Summarizer] Main World transcript fetch failed:', errorMsg);
+      throw new Error(errorMsg);
     }
   } catch (error) {
     console.error('[YouTube Summarizer] Error during Main World transcript fetch:', error);

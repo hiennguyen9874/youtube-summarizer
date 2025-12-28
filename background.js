@@ -47,15 +47,40 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       target: { tabId: sender.tab.id },
       world: 'MAIN',
       func: async (url) => {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`Status: ${response.status}`);
-        return await response.text();
+        const wait = (ms) => new Promise(res => setTimeout(res, ms));
+        let lastError;
+        
+        // Try up to 3 times with exponential backoff
+        for (let i = 0; i < 3; i++) {
+          try {
+            console.log(`[YouTube Summarizer] Fetch attempt ${i + 1} for transcript...`);
+            const response = await fetch(url);
+            
+            if (response.status === 429) {
+              console.warn(`[YouTube Summarizer] Received 429 (Too Many Requests). Retrying in ${2000 * Math.pow(2, i)}ms...`);
+              lastError = new Error('Too Many Requests (429)');
+              await wait(2000 * Math.pow(2, i));
+              continue;
+            }
+            
+            if (!response.ok) {
+              throw new Error(`Status: ${response.status}`);
+            }
+            
+            return await response.text();
+          } catch (e) {
+            console.error(`[YouTube Summarizer] Fetch attempt ${i + 1} failed:`, e.message);
+            lastError = e;
+            if (i < 2) await wait(2000 * Math.pow(2, i));
+          }
+        }
+        throw lastError;
       },
       args: [request.url]
     }).then(results => {
       sendResponse({ success: true, xml: results[0]?.result });
     }).catch(error => {
-      console.error('Main World transcript fetch error:', error);
+      console.error('Main World transcript fetch error after retries:', error);
       sendResponse({ success: false, error: error.message });
     });
     return true;
