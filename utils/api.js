@@ -22,6 +22,9 @@ async function summarize(
   systemPrompt,
   onChunk
 ) {
+  console.log("[summarize] systemPrompt: ", systemPrompt);
+  console.log("[summarize] transcript: ", transcript);
+
   // If we're in the background script (service worker), perform the actual fetch
   // In Manifest V3 service worker, 'window' is undefined
   if (typeof window === "undefined") {
@@ -54,6 +57,7 @@ async function summarize(
       return new Promise((resolve, reject) => {
         const port = chrome.runtime.connect({ name: "summarize-stream" });
         let fullText = "";
+
 
         port.postMessage({
           action: "summarize",
@@ -129,15 +133,12 @@ async function callOpenAI(
   systemPrompt,
   onChunk
 ) {
+  console.log("[callOpenAI] systemPrompt: ", systemPrompt);
+  console.log("[callOpenAI] transcript: ", transcript);
+
   // Ensure baseUrl doesn't have trailing slash
   const cleanBaseUrl = baseUrl.replace(/\/$/, "");
   const url = `${cleanBaseUrl}/chat/completions`;
-
-  // Truncate transcript if too long (roughly 15000 chars ~ 4000 tokens)
-  const truncatedTranscript =
-    transcript.length > 15000
-      ? transcript.substring(0, 15000) + "...[truncated]"
-      : transcript;
 
   const response = await fetch(url, {
     method: "POST",
@@ -151,7 +152,7 @@ async function callOpenAI(
         { role: "system", content: systemPrompt },
         {
           role: "user",
-          content: `Please summarize the following YouTube video transcript:\n\n${truncatedTranscript}`,
+          content: `Please summarize the following YouTube video transcript:\n\n${transcript}`,
         },
       ],
       temperature: 0.7,
@@ -228,20 +229,17 @@ async function callGemini(
   systemPrompt,
   onChunk
 ) {
+  console.log("[callGemini] systemPrompt: ", systemPrompt);
+  console.log("[callGemini] transcript: ", transcript);
+
   // Ensure baseUrl doesn't have trailing slash
   const cleanBaseUrl = baseUrl.replace(/\/$/, "");
   const modelName = model || "gemini-2.0-flash";
   const method = onChunk ? "streamGenerateContent" : "generateContent";
   const url = `${cleanBaseUrl}/v1beta/models/${modelName}:${method}?key=${apiKey}`;
 
-  // Truncate transcript if too long
-  const truncatedTranscript =
-    transcript.length > 30000
-      ? transcript.substring(0, 30000) + "...[truncated]"
-      : transcript;
-
   // Combine system prompt and user content for Gemini
-  const fullPrompt = `${systemPrompt}\n\nPlease summarize the following YouTube video transcript:\n\n${truncatedTranscript}`;
+  const fullPrompt = `${systemPrompt}\n\nPlease summarize the following YouTube video transcript:\n\n${transcript}`;
 
   const response = await fetch(url, {
     method: "POST",
